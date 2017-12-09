@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Password Generator</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body
+		{
+			background: black;
+			font-family: monospace;
+			padding: 0;
+			margin: 0;
+		}
+
+		#wrapper
+		{
+			position: fixed;
+			display: inline-block;
+		}
+
+		#hint
+		{
+			display: inline-block;
+			color: #43a047;
+		}
+
+		#pw
+		{
+			display: inline-block;
+			color: #1b5e20;
+			cursor: text;
+		}
+
+		#pw span
+		{
+			color: #43a047;
+		}
+
+		#chars
+		{
+			position: absolute;
+			display: inline-block;
+			color: #43a047;
+			padding-right: 1px;
+			border-right: 1px solid #43a047;
+		}
+
+		::selection
+		{
+			display: none;
+			background: transparent;
+			color: inherit;
+		}
+	</style>
+</head>
+<body>
+	<div id="wrapper">
+		<div id="hint">&nbsp;</div>
+		<br>
+		<div id="pw"></div>
+		<br>
+		<div id="chars"></div>
+	</div>
+	<script>
+		var chars = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"],
+		pw = "", _selected = 128, charWidth;
+		if(location.protocol!="https:")
+			location.protocol="https:";
+		else document.addEventListener("DOMContentLoaded",function()
+		{
+			for(let i = 0; i < 128; i++)
+			{
+				pw += chars[rand(0, chars.length - 1)];
+			}
+			$("#pw").html(pw);
+			$(window).resize(function()
+			{
+				let width = window.innerWidth, i = 5;
+				for(let i = 5; i < 200; i++)
+				{
+					$("#pw").css("font-size", i + "px");
+					if($("#pw")[0].clientWidth >= width)
+					{
+						$("#pw").css("font-size", (i - 1) + "px");
+						charWidth = ($("#pw")[0].clientWidth / 128);
+						$("#wrapper")
+							.css("top", ((window.innerHeight / 2) - ($("#pw")[0].clientHeight / 2)) + "px")
+							.css("left", ((window.innerWidth / 2) - ($("#pw")[0].clientWidth / 2)) + "px")
+						updateSelection(_selected);
+						return;
+					}
+				}
+				updateSelection(_selected);
+			}).resize();
+			$("#pw").on("mousemove",function(event)
+			{
+				let hovered = Math.floor(event.offsetX / charWidth), selected = 128;
+				$([128, 100, 72, 64, 50, 32, 20, 16, 8]).each(function()
+				{
+					if(this > hovered)
+					{
+						selected = this;
+					}
+				});
+				updateSelection(selected);
+			}).on("mousedown",function()
+			{
+				let text = "[Ctrl] + [C] or Right-Click &gt; Copy";
+				if(document.execCommand("copy"))
+				{
+					text = "Password copied.";
+				}
+				$("#hint").stop().html(text).css("opacity",1.0).animate({
+					"opacity": 0.0
+				},3000,function()
+				{
+					$("#hint").html("&nbsp;");
+				})
+			})
+		});
+
+		function updateSelection(selected)
+		{
+			$("#pw").html("<span>" + pw.substr(0, selected) + "</span>" + pw.substr(selected));
+			$("#chars").html(selected).css("left", ((selected * charWidth) - ($("#chars")[0].clientWidth + 3)) + "px");
+			let range = document.createRange();
+			range.selectNodeContents($("#pw span")[0]);
+			let sel = window.getSelection();
+			sel.removeAllRanges();
+			sel.addRange(range);
+			_selected = selected;
+		}
+
+		function rand(min,max)
+		{
+			let r=-1;
+			do
+			{
+				if(typeof crypto!="undefined")
+				{
+					r=parseInt(crypto.getRandomValues(new Uint32Array(1))[0].toString().substr(1,(max+"").length));
+				}
+				else
+				{
+					r=Math.floor(Math.random()*max);
+				}
+				r+=min;
+			}
+			while(r<min||r>max);
+			return r;
+		}
+	</script>
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+</body>
+</html>
